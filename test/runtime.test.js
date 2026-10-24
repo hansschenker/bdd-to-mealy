@@ -149,3 +149,23 @@ test('conflicting rules are rejected before runtime execution', () => {
     ConflictingTransitionError,
   );
 });
+
+
+test('late state subscribers receive the current shared machine state', () => {
+  const event$ = new Subject();
+  const machine = createMealyMachine$(toggleRules, 'off', event$);
+
+  const actions = [];
+  const actionSubscription = machine.action$.subscribe((action) => actions.push(action));
+
+  event$.next('toggle');
+
+  const states = [];
+  const stateSubscription = machine.state$.subscribe((state) => states.push(state));
+
+  assert.deepEqual(actions, ['turn on']);
+  assert.deepEqual(states, ['on']);
+
+  actionSubscription.unsubscribe();
+  stateSubscription.unsubscribe();
+});
