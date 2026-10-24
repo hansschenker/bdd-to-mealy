@@ -4,12 +4,11 @@ import {
   filter,
   from,
   map,
-  merge,
   Observable,
-  of,
   scan,
   share,
   shareReplay,
+  startWith,
 } from 'rxjs';
 
 import type { MealyRule } from '../model.js';
@@ -42,6 +41,11 @@ export function createMealyMachine$(
   const index = buildTransitionIndex(rules);
   const unknownTransition = options.unknownTransition ?? 'error';
 
+  const initialMachine: RuntimeAccumulator = {
+    state: initialState,
+    step: null,
+  };
+
   const machine$ = event$.pipe(
     scan<string, RuntimeAccumulator>(
       (machine, event) => {
@@ -70,12 +74,13 @@ export function createMealyMachine$(
           step,
         };
       },
-      {
-        state: initialState,
-        step: null,
-      },
+      initialMachine,
     ),
-    share(),
+    startWith(initialMachine),
+    shareReplay({
+      bufferSize: 1,
+      refCount: true,
+    }),
   );
 
   const trace$ = machine$.pipe(
@@ -84,10 +89,8 @@ export function createMealyMachine$(
     share(),
   );
 
-  const state$ = merge(
-    of(initialState),
-    trace$.pipe(map((step) => step.nextState)),
-  ).pipe(
+  const state$ = machine$.pipe(
+    map((machine) => machine.state),
     distinctUntilChanged(),
     shareReplay({
       bufferSize: 1,
