@@ -6,7 +6,7 @@ Project owner and originator of the BDD-to-Mealy refinement idea and repository.
 
 ## GPT-5.6 Sol (OpenAI)
 
-Contributed to the formalization of:
+Contributed to the formalization and implementation of:
 
 - the **Mealy-DSL** syntax
 - the **Convertible BDD Profile**
@@ -14,4 +14,9 @@ Contributed to the formalization of:
 - the semantic invariant `(State, Event) -> (Action*, Next State)`
 - the hard rule that **`And` is reserved exclusively for the final state**
 - the parser-oriented intermediate representation
+- the TypeScript Convertible BDD parser
+- the Mealy-DSL generator
+- the Mealy-DSL parser
+- parser validation and conflict detection
+- semantic round-trip tests
 - the proposed validation, visualization, test-generation, and code-generation pipeline
