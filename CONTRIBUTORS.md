@@ -19,4 +19,8 @@ Contributed to the formalization and implementation of:
 - the Mealy-DSL parser
 - parser validation and conflict detection
 - semantic round-trip tests
+- machine analysis over the semantic model
+- discovered vs declared alphabet separation
+- transition completeness analysis
+- reachability and terminal-state analysis
 - the proposed validation, visualization, test-generation, and code-generation pipeline
