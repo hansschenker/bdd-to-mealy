@@ -144,7 +144,14 @@ Mealy-DSL
     ↓
 Parser AST / machine model
     ↓
-Transition tables
+Machine Analysis
+    ├── alphabets
+    ├── transition table
+    ├── determinism
+    ├── reachability
+    ├── terminal states
+    └── completeness
+    ↓
 State diagrams
 Generated tests
 Simulation
@@ -190,6 +197,7 @@ Public functions:
 - `parseMealyDsl(source)` — parses Mealy-DSL back into the same semantic model.
 - `bddToMealyDsl(source)` — direct convenience pipeline.
 - `findRuleConflicts(rules)` — reports duplicate `State + Event` rule pairs.
+- `analyzeMachine(rules, options)` — derives alphabets, transition tables, reachability, terminal states, conflicts, undeclared symbols, missing transitions, and completeness.
 
 The parser reports source line numbers and rejects malformed rule ordering, missing actions, missing final-state clauses, and clauses appearing after the final `And`.
 
@@ -228,7 +236,46 @@ The first parser milestone is now implemented:
 6. Detect duplicate/conflicting `State + Event` pairs.
 7. Verify semantic round trips with tests.
 
-Natural next milestones are transition-table generation, state-diagram generation, completeness analysis against declared state/event alphabets, and generated state-machine/RxJS test scaffolding.
+## Machine analysis
+
+The semantic model is now executable as a machine specification:
+
+```ts
+const analysis = analyzeMachine(rules, {
+  initialState: 'off',
+  states: ['off', 'on'],
+  events: ['toggle'],
+});
+```
+
+The analyzer distinguishes **discovered alphabets** from **declared alphabets**. Completeness is checked against the declared Cartesian product:
+
+```text
+Declared States × Declared Events
+```
+
+It reports:
+
+- discovered states, events, and actions
+- undeclared states and events
+- transition table
+- duplicate State + Event conflicts
+- reachable and unreachable states
+- terminal states
+- missing transitions
+- a `complete` result
+
+Current completeness means:
+
+```text
+deterministic
+AND alphabet-consistent
+AND transition-total
+```
+
+See [Machine Analysis](docs/machine-analysis.md).
+
+Natural next milestones are state-diagram generation, generated transition-based tests, and an executable simulator.
 
 ## Origin and collaboration
 
@@ -243,4 +290,5 @@ See [CONTRIBUTORS.md](CONTRIBUTORS.md).
 - [Convertible BDD Profile](docs/convertible-bdd-profile.md)
 - [Mealy-DSL](docs/mealy-dsl.md)
 - [Semantic Model](docs/semantic-model.md)
+- [Machine Analysis](docs/machine-analysis.md)
 - [Examples](examples/order-payment.md)
