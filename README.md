@@ -158,23 +158,83 @@ BDD and Mealy-DSL can ultimately be treated as two projections of the same seman
 (State, Event) -> (Action*, Next State)
 ```
 
+## Reference implementation
+
+The repository now contains a dependency-light TypeScript reference implementation of the complete first pipeline:
+
+```text
+Convertible BDD
+    ↓ parseConvertibleBdd()
+MealyRule[]
+    ↓ generateMealyDsl()
+Mealy-DSL
+    ↓ parseMealyDsl()
+MealyRule[]
+```
+
+The shared semantic model is:
+
+```ts
+type MealyRule = Readonly<{
+  currentState: string;
+  event: string;
+  actions: readonly string[];
+  nextState: string;
+}>;
+```
+
+Public functions:
+
+- `parseConvertibleBdd(source)` — parses strict Convertible BDD into semantic rules.
+- `generateMealyDsl(rules)` — renders semantic rules as canonical Mealy-DSL.
+- `parseMealyDsl(source)` — parses Mealy-DSL back into the same semantic model.
+- `bddToMealyDsl(source)` — direct convenience pipeline.
+- `findRuleConflicts(rules)` — reports duplicate `State + Event` rule pairs.
+
+The parser reports source line numbers and rejects malformed rule ordering, missing actions, missing final-state clauses, and clauses appearing after the final `And`.
+
+### Build and test
+
+```bash
+npm install
+npm test
+```
+
+The reference tests include the invariant:
+
+```text
+Convertible BDD
+    ↓
+Semantic Model
+    ↓
+Mealy-DSL
+    ↓
+Semantic Model
+
+result before == result after
+```
+
+This round-trip property ensures that Mealy-DSL generation does not lose or invent machine semantics.
+
 ## Project direction
 
-The first practical parser milestone should:
+The first parser milestone is now implemented:
 
-1. Parse Mealy-DSL rules.
-2. Validate the grammar.
-3. Produce a typed semantic model.
-4. Generate a transition table.
-5. Detect duplicate or conflicting State + Event rules.
-6. Detect missing or malformed final-state clauses.
-7. Provide a foundation for generated state diagrams and tests.
+1. Parse Convertible BDD rules.
+2. Produce a typed semantic model.
+3. Generate canonical Mealy-DSL.
+4. Parse Mealy-DSL back into the same semantic model.
+5. Validate clause ordering and mandatory final-state semantics.
+6. Detect duplicate/conflicting `State + Event` pairs.
+7. Verify semantic round trips with tests.
+
+Natural next milestones are transition-table generation, state-diagram generation, completeness analysis against declared state/event alphabets, and generated state-machine/RxJS test scaffolding.
 
 ## Origin and collaboration
 
 This project grew from a design discussion about expressing Mealy-machine behavior without relying on the traditional tuple-symbol vocabulary, and about creating a deterministic refinement path from domain-level BDD to machine semantics.
 
-**GPT-5.6 Sol (OpenAI)** contributed substantially to the formulation of the Mealy-DSL syntax, the Convertible BDD Profile, the semantic mapping, parser architecture, and the rule that `And` is reserved exclusively for the final state.
+**GPT-5.6 Sol (OpenAI)** contributed substantially to the formulation of the Mealy-DSL syntax, the Convertible BDD Profile, the semantic mapping, parser architecture, reference TypeScript implementation, validation strategy, round-trip tests, and the rule that `And` is reserved exclusively for the final state.
 
 See [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
